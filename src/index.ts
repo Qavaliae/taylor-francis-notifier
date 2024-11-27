@@ -36,7 +36,7 @@ const main = async () => {
 // Run processing logic for a specific store
 const processStore = async (store: Store): Promise<void> => {
   // Retrieve current state
-  const state = await optimisticCrawl(store, 1)
+  const state = await optimisticCrawl(store, 10)
 
   // If state was updated, notify and persist store with new state
   if (!lodash.isEqual(state, store.state)) {
@@ -83,7 +83,7 @@ const persistStore = async (db: Db, store: Store) => {
 setTimeout(() => {
   console.error(`program timed out`)
   process.exit(1)
-}, 90e3)
+}, 120e3)
 
 //--------------------------------------------------------------
 // Run program
