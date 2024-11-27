@@ -1,0 +1,24 @@
+name: Recurrent Job
+
+on:
+  workflow_dispatch: null
+  push: null
+  schedule:
+    - cron: '*/30 * * * *'
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    env:
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      MAILER_AUTH: ${{ secrets.MAILER_AUTH }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: npm
+      - run: npm ci
+      - run: npm start
