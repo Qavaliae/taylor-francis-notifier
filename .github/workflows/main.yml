@@ -1,10 +1,10 @@
 name: Recurrent Job
 
-# on:
-#   workflow_dispatch: null
-#   push: null
-#   schedule:
-#     - cron: '*/30 * * * *'
+on:
+  workflow_dispatch: null
+  push: null
+  schedule:
+    - cron: '*/30 * * * *'
 
 jobs:
   main:

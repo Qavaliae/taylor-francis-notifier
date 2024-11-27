@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "Ingrid Kamga",
@@ -12,8 +13,9 @@
     "@types/lodash": "^4.17.4",
     "@types/node": "^22.10.0",
     "@types/nodemailer": "^6.4.15",
+    "prettier": "^3.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "axios": "^1.7.4",

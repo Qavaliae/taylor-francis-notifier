@@ -51,8 +51,9 @@ export const notify = async (store: Store) => {
 
 export const composeMessage = (state: State): string => {
   return (
-    `Ref: ${state.ref}\n` +
-    `Status: ${state.status ?? 'N/A'}\n` +
-    `Last modified: ${state.modified ?? 'N/A'}`
+    `Ref: ${state.ref}\n\n` +
+    `${state.title}\n\n` +
+    `➶ ${state.status ?? 'N/A'}\n` +
+    `➶ ${state.modified ?? 'N/A'}`
   )
 }

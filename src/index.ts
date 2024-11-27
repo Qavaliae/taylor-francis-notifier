@@ -21,8 +21,7 @@ const main = async () => {
 
   // Process stores
   for (const store of stores) {
-    await processStore(store).catch((e) => {
-      console.error(e)
+    await processStore(store).catch(() => {
       process.exitCode = 1
       console.error(`${store._id}: error processing store`)
     })

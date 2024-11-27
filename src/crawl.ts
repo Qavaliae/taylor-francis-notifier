@@ -1,3 +1,5 @@
+import { State, Store } from './types'
+
 import puppeteer, {
   Browser,
   ElementHandle,
@@ -5,15 +7,13 @@ import puppeteer, {
   Page,
 } from 'puppeteer'
 
-import { State, Store } from './types'
-
 /**
  * Retrieve current state
  */
 export const crawl = async (store: Store): Promise<State> => {
   // Launch the browser and open a new blank page
 
-  const browser = await puppeteer.launch({headless: false})
+  const browser = await puppeteer.launch()
   const [page] = await browser.pages()
   await configureTimeout(browser)
 
@@ -43,12 +43,11 @@ export const crawl = async (store: Store): Promise<State> => {
 
   // Gather state
 
-  const toggler = await matchingSubmission?.$('.toggle-indicator')
-  if (!toggler) {
-    console.log('No togllllllllllller')
+  if (await matchingSubmission?.$('.notch-down')) {
+    const toggler = await matchingSubmission?.$('.toggle-indicator')
+    await toggler?.click()
+    await matchingSubmission?.waitForSelector('.notch-up')
   }
-  await toggler?.click()
-  await page.waitForSelector('.submission-stage .current-status')
 
   const state: State = {
     ref: store.submissionId,
