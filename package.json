@@ -1,5 +1,5 @@
 {
-  "name": "editorial-manager-notifier",
+  "name": "taylor-francis-notifier",
   "version": "1.0.0",
   "description": "",
   "scripts": {
@@ -10,7 +10,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/lodash": "^4.17.4",
-    "@types/node": "^20.14.2",
+    "@types/node": "^22.10.0",
     "@types/nodemailer": "^6.4.15",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"

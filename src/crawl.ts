@@ -1,12 +1,11 @@
-import puppeteer, { Browser, Frame, KeyboardTypeOptions, Page } from 'puppeteer'
-import { State, Store } from './types'
+import puppeteer, {
+  Browser,
+  ElementHandle,
+  KeyboardTypeOptions,
+  Page,
+} from 'puppeteer'
 
-const Constants = {
-  manuscriptNumber: 1,
-  title: 2,
-  statusDate: 4,
-  currentStatus: 5,
-}
+import { State, Store } from './types'
 
 /**
  * Retrieve current state
@@ -14,7 +13,7 @@ const Constants = {
 export const crawl = async (store: Store): Promise<State> => {
   // Launch the browser and open a new blank page
 
-  const browser = await puppeteer.launch()
+  const browser = await puppeteer.launch({headless: false})
   const [page] = await browser.pages()
   await configureTimeout(browser)
 
@@ -36,69 +35,67 @@ export const crawl = async (store: Store): Promise<State> => {
 
   // Fetch data
 
-  const iframe = await navigateToContentIframe(page)
-  const rows = await iframe.$$eval('#datatable tbody tr', (rows) => {
-    return rows.map((row) => {
-      const cells = row.querySelectorAll('td')
-      return Array.from(cells).map((cell) => cell.textContent?.trim())
-    })
+  const submissions = await page.$$('.submission-list-item')
+  const matchingSubmission = submissions.find(async (submission) => {
+    const submissionId = await read(submission, '.detail.submission-id span')
+    return submissionId == store.submissionId
   })
+
+  // Gather state
+
+  const toggler = await matchingSubmission?.$('.toggle-indicator')
+  if (!toggler) {
+    console.log('No togllllllllllller')
+  }
+  await toggler?.click()
+  await page.waitForSelector('.submission-stage .current-status')
+
+  const state: State = {
+    ref: store.submissionId,
+    title: await read(matchingSubmission, '.detail.title div'),
+    status: await read(matchingSubmission, '.detail.status span'),
+    modified: await read(
+      matchingSubmission,
+      '.submission-stage .current-status .date',
+    ),
+  }
 
   // Close browser
 
   await browser.close()
 
-  // Gather state
-
-  const state: State = {
-    ref: store.submissionId,
-  }
-
-  const match = rows.find((row) => row[Constants.manuscriptNumber] == state.ref)
-  if (match !== undefined) {
-    state.title = match[Constants.title]
-    state.status = match[Constants.currentStatus]
-    state.modified = match[Constants.statusDate]
-  }
-
   return state
+}
+
+const read = async (
+  elt: ElementHandle | undefined,
+  selector: string,
+): Promise<string | undefined> => {
+  const content = elt?.$eval(selector, (el) => el.textContent?.trim())
+  return (await content) ?? undefined
 }
 
 const gotoEntry = async (page: Page, entry: string, timeout?: number) => {
   await page.goto(entry, { waitUntil: 'networkidle2' })
-  const iframe = await navigateToContentIframe(page)
-  await iframe.waitForSelector('#datatable', { timeout })
+  await page.waitForSelector('.submission-list', { timeout })
 }
 
 const tryLogin = async (page: Page, { login, credentials }: Store) => {
   // Load login page
 
   await page.goto(login, { waitUntil: 'networkidle2' })
-  const iframe = await navigateToContentIframe(page)
-  await iframe.waitForSelector('#loginButtonsDiv')
+  await page.waitForSelector('.login-inner-wrapper')
 
   // Input and submit credentials
 
   const { username, password } = credentials
   const opts: KeyboardTypeOptions = { delay: 100 }
 
-  await iframe.type('#userNamePasswordDiv #username', username, opts)
-  await iframe.type('#userNamePasswordDiv #passwordTextbox', password, opts)
+  await page.type('.login-inner-wrapper #inputEmail', username, opts)
+  await page.type('.login-inner-wrapper #inputPassword', password, opts)
 
-  await iframe.click('#loginButtonsDiv input[name="authorLogin"]')
+  await page.click('.login-inner-wrapper #loginBtn')
   await page.waitForNavigation()
-}
-
-const navigateToContentIframe = async (page: Page): Promise<Frame> => {
-  await page.waitForSelector('iframe[name=content]')
-  let iframeElement = await page.$('iframe[name=content]')
-
-  let iframe = await iframeElement?.contentFrame()
-  if (!iframe) {
-    throw Error('could not switch to content iframe')
-  }
-
-  return iframe
 }
 
 const configureTimeout = async (browser: Browser) => {

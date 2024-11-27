@@ -30,7 +30,7 @@ export const notify = async (store: Store) => {
         await mailer
           .sendMail({
             from: {
-              name: 'Snapp Notifier',
+              name: 'Taylor & Francis',
               address: config.mailer.user,
             },
             to: email,

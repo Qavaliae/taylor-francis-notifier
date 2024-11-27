@@ -21,7 +21,8 @@ const main = async () => {
 
   // Process stores
   for (const store of stores) {
-    await processStore(store).catch(() => {
+    await processStore(store).catch((e) => {
+      console.error(e)
       process.exitCode = 1
       console.error(`${store._id}: error processing store`)
     })
@@ -36,7 +37,7 @@ const main = async () => {
 // Run processing logic for a specific store
 const processStore = async (store: Store): Promise<void> => {
   // Retrieve current state
-  const state = await optimisticCrawl(store, 10)
+  const state = await optimisticCrawl(store, 1)
 
   // If state was updated, notify and persist store with new state
   if (!lodash.isEqual(state, store.state)) {
