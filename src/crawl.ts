@@ -20,7 +20,7 @@ export const crawl = async (store: Store): Promise<State> => {
 
   // Restore cookies
 
-  await loadCookies(store, browser)
+  await loadCookies(store, page)
 
   // Go to entry
 
@@ -28,13 +28,13 @@ export const crawl = async (store: Store): Promise<State> => {
     console.log(`${store._id}: login required (?)`)
     notifyTelegram(store.listeners, `${store._id}: login required (?)`)
 
-    await tryLogin(await browser.newPage(), store)
+    await tryLogin(page, store)
     await gotoEntry(page, store.tracker)
   })
 
   // Persist cookies
 
-  await persistCookies(store, browser)
+  await persistCookies(store, page)
 
   // Fetch data
 
@@ -108,26 +108,18 @@ const configureTimeout = async (browser: Browser) => {
   }
 }
 
-const loadCookies = async (store: Store, browser: Browser) => {
+const loadCookies = async (store: Store, page: Page) => {
   if (!Array.isArray(store.cookies)) {
     return
   }
 
   console.log(`${store._id}: loading cookies...`)
-
-  for (const page of await browser.pages()) {
-    await page.setCookie(...store.cookies)
-  }
-
+  await page.setCookie(...store.cookies)
   console.log(`${store._id}: loaded cookies`)
 }
 
-const persistCookies = async (store: Store, browser: Browser) => {
-  let cookies = []
-
-  for (const page of await browser.pages()) {
-    cookies.push(...(await page.cookies()))
-  }
-
+const persistCookies = async (store: Store, page: Page) => {
+  const client = await page.createCDPSession()
+  const { cookies } = await client.send('Network.getAllCookies')
   store.cookies = cookies
 }
