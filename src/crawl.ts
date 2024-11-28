@@ -1,3 +1,4 @@
+import { notifyTelegram } from './notify'
 import { State, Store } from './types'
 
 import puppeteer, {
@@ -25,7 +26,9 @@ export const crawl = async (store: Store): Promise<State> => {
 
   await gotoEntry(page, store.tracker, 5e3).catch(async () => {
     console.log(`${store._id}: login required (?)`)
-    await tryLogin(page, store)
+    notifyTelegram(store.listeners, `${store._id}: login required (?)`)
+
+    await tryLogin(await browser.newPage(), store)
     await gotoEntry(page, store.tracker)
   })
 
@@ -75,6 +78,7 @@ const read = async (
 }
 
 const gotoEntry = async (page: Page, entry: string, timeout?: number) => {
+  await page.bringToFront()
   await page.goto(entry, { waitUntil: 'networkidle2' })
   await page.waitForSelector('.submission-list', { timeout })
 }
@@ -82,6 +86,7 @@ const gotoEntry = async (page: Page, entry: string, timeout?: number) => {
 const tryLogin = async (page: Page, { login, credentials }: Store) => {
   // Load login page
 
+  await page.bringToFront()
   await page.goto(login, { waitUntil: 'networkidle2' })
   await page.waitForSelector('.login-inner-wrapper')
 

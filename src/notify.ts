@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { config } from './config'
-import { State, Store } from './types'
+import { Listener, State, Store } from './types'
 import { mailer } from './utils/mailer'
 
 export const notify = async (store: Store) => {
@@ -47,6 +47,27 @@ export const notify = async (store: Store) => {
         break
     }
   }
+}
+
+export const notifyTelegram = async (
+  listeners: Listener[],
+  message: string,
+) => {
+  const listener = listeners
+    .filter((e) => e.enabled)
+    .find((e) => e.channel == 'telegram')
+
+  if (!listener) {
+    throw Error('Could not find any telegram listener')
+  }
+
+  const { bot, chatId } = listener
+  const url = `https://api.telegram.org/${bot}/sendMessage`
+
+  await axios.post(url, {
+    chat_id: chatId,
+    text: message,
+  })
 }
 
 export const composeMessage = (state: State): string => {
